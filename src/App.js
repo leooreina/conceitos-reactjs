@@ -11,13 +11,18 @@ function App() {
     api.get('/repositories').then(response => {
       setRepositories(response.data);
     })
-  })
+  }, [])
 
   async function handleAddRepository() {
-    const repositoryName = document.getElementById('title-repo');
-    const repository = api.post('/repositories', {
-       title: repositoryName.value,
-       owner: 'Leonardo Reina',
+    const repositoryTitle = document.getElementById('title-repo').value;
+    const repository = await api.post('/repositories', {
+       title: repositoryTitle,
+       url: 'http://github.com/repository',
+       techs: [
+        "Javascript",
+        "Frontend",
+        "Backend"
+       ],
        likes: 0 
     })
 
@@ -25,7 +30,15 @@ function App() {
   }
 
   async function handleRemoveRepository(id) {
-    // TODO
+    const repositoryIndex = await api.get('/repositories').then(repos => {
+      return repos.data.findIndex(repo => repo.id === id);
+    });
+
+    await api.delete(`/repositories/${id}`).then(() => {
+      repositories.splice(repositoryIndex, 1)
+    });
+
+    setRepositories([...repositories])
   }
 
   return (
@@ -34,7 +47,7 @@ function App() {
         {
           repositories.map(repo => (
             <li key={repo.id}>
-              {repo.title}
+              <span>{repo.title}</span>
               <button onClick={() => handleRemoveRepository(repo.id)}>
                 Remover
               </button>
