@@ -1,14 +1,27 @@
 import React, { useState, useEffect } from "react";
-import axios from 'axios';
-
+import api from "./services/api";
 import "./styles.css";
 
 function App() {
 
+  const [repositories, setRepositories] = useState([]);
+
+  /** Works like 'componentDidMount' do React antigo */
+  useEffect(() => {
+    api.get('/repositories').then(response => {
+      setRepositories(response.data);
+    })
+  })
 
   async function handleAddRepository() {
-    // TODO
-    axios.get('/repositories')
+    const repositoryName = document.getElementById('title-repo');
+    const repository = api.post('/repositories', {
+       title: repositoryName.value,
+       owner: 'Leonardo Reina',
+       likes: 0 
+    })
+
+    setRepositories([...repositories, repository.data])
   }
 
   async function handleRemoveRepository(id) {
@@ -18,15 +31,19 @@ function App() {
   return (
     <div>
       <ul data-testid="repository-list">
-        <li>
-          Repositório 1
-
-          <button onClick={() => handleRemoveRepository(1)}>
-            Remover
-          </button>
-        </li>
+        {
+          repositories.map(repo => (
+            <li key={repo.id}>
+              {repo.title}
+              <button onClick={() => handleRemoveRepository(repo.id)}>
+                Remover
+              </button>
+            </li>
+          ))
+        }
       </ul>
 
+      <input type="text" name="addRepository" id="title-repo" placeholder="Insert repository title" />
       <button onClick={handleAddRepository}>Adicionar</button>
     </div>
   );
